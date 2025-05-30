@@ -1,0 +1,16 @@
+[versions]
+agp = "9.5.1"
+androidx-annotation = "1.9.1"
+androidx-webkit = "1.15.0"
+junit = "4.13.2"
+org-json = "20250517"
+
+[libraries]
+androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
+androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidx-webkit" }
+junit = { module = "junit:junit", version.ref = "junit" }
+org-json = { module = "org.json:json", version.ref = "org-json" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
