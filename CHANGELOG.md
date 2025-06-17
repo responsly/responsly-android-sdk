@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.6.2] - 2025-06-17
+
+- Define survey events and exclusion reasons.
+
 ## [0.6.1] - 2025-06-07
 
 - Define initialization and survey display options.
