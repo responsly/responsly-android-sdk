@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.6.7] - 2025-07-20
+
+- Model remote SDK configuration.
+
 ## [0.6.6] - 2025-07-17
 
 - Add stable sampling hash utility.
