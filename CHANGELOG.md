@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.7.1] - 2025-07-31
+
+- Model persisted SDK and user state.
+
 ## [0.7.0] - 2025-07-24
 
 - Decode remote configuration with contract tests.
