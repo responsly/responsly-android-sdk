@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.7.3] - 2025-08-15
+
+- Evaluate audience and trait conditions.
+
 ## [0.7.2] - 2025-08-06
 
 - Persist identity and targeting counters.
