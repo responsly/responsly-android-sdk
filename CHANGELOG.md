@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.7.4] - 2025-08-23
+
+- Select surveys using targeting fixtures.
+
 ## [0.7.3] - 2025-08-15
 
 - Evaluate audience and trait conditions.
