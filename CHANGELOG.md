@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.7.5] - 2025-08-29
+
+- Fetch configuration through the SDK API.
+
 ## [0.7.4] - 2025-08-23
 
 - Select surveys using targeting fixtures.
