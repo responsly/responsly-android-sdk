@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.7.6] - 2025-09-07
+
+- Batch survey telemetry with delivery tests.
+
 ## [0.7.5] - 2025-08-29
 
 - Fetch configuration through the SDK API.
