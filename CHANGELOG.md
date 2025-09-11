@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.7.7] - 2025-09-11
+
+- Define incoming survey bridge messages.
+
 ## [0.7.6] - 2025-09-07
 
 - Batch survey telemetry with delivery tests.
