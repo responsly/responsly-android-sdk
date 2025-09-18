@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.8.0] - 2025-09-18
+
+- Build survey initialization context.
+
 ## [0.7.7] - 2025-09-11
 
 - Define incoming survey bridge messages.
