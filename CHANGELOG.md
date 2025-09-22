@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.8.1] - 2025-09-22
+
+- Construct survey URLs and parameters.
+
 ## [0.8.0] - 2025-09-18
 
 - Build survey initialization context.
