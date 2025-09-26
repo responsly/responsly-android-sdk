@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.8.2] - 2025-09-26
+
+- Parse survey presentation colors.
+
 ## [0.8.1] - 2025-09-22
 
 - Construct survey URLs and parameters.
