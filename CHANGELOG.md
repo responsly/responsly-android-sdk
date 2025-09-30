@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.8.3] - 2025-09-30
+
+- Verify survey bridge protocol behavior.
+
 ## [0.8.2] - 2025-09-26
 
 - Parse survey presentation colors.
