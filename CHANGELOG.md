@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.8.4] - 2025-10-10
+
+- Define survey presenter lifecycle contracts.
+
 ## [0.8.3] - 2025-09-30
 
 - Verify survey bridge protocol behavior.
