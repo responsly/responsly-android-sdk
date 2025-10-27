@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.8.7] - 2025-10-27
+
+- Track foreground activities from process startup.
+
 ## [0.8.6] - 2025-10-24
 
 - Coordinate SDK lifecycle and survey selection.
