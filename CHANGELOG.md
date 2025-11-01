@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.9.0] - 2025-11-01
+
+- Expose Android SDK entry point and platform adapter.
+
 ## [0.8.7] - 2025-10-27
 
 - Track foreground activities from process startup.
