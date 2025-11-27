@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.responsly"
-version = "0.9.3"
+version = "0.9.4"
 
 android {
     namespace = "com.responsly.sdk"
