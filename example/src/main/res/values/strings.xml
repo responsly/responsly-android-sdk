@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Responsly Example</string>
+    <string name="sdk_key">SDK key</string>
+    <string name="api_host">API host</string>
+    <string name="debug_logging">Debug logging (Logcat tag “Responsly”)</string>
+    <string name="initialize">Initialize</string>
+    <string name="identify">Identify demo user</string>
+    <string name="track">Track purchase_completed</string>
+    <string name="screen">Screen Checkout</string>
+    <string name="survey_id">Survey id</string>
+    <string name="force">Force</string>
+    <string name="show">Show survey</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="close">Close survey</string>
+    <string name="reset">Reset</string>
+    <string name="log_title">Listener callbacks</string>
+    <string name="clear">Clear</string>
+</resources>

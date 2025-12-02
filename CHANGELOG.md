@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [0.9.5] - 2025-12-02
+
+- Provide a native example application.
+
 ## [0.9.4] - 2025-11-27
 
 - Connect survey presentation to Android activities.
