@@ -3,6 +3,7 @@ package com.responsly.example
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -102,6 +103,10 @@ class MainActivity : Activity(), ResponslyListener {
             print("reset()")
         }
         onClick(R.id.clear) { log.text = "" }
+
+        if (savedInstanceState == null) {
+            runScript()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -151,11 +156,38 @@ class MainActivity : Activity(), ResponslyListener {
 
     // endregion
 
+    /**
+     * Scripted run for automated checks, from the launch intent:
+     * `am start -n com.responsly.example/.MainActivity --es autoRun initialize,identify,track`
+     * (also `screen`, `show`, `pause`, `resume`, `close`, `reset`); steps run two seconds apart.
+     * `--es sdkKey …`, `--es apiHost …` and `--es surveyId …` fill the fields first.
+     */
+    private fun runScript() {
+        intent.getStringExtra("sdkKey")?.let { sdkKey.setText(it) }
+        intent.getStringExtra("apiHost")?.let { apiHost.setText(it) }
+        intent.getStringExtra("surveyId")?.let { surveyId.setText(it) }
+
+        val buttons = mapOf(
+            "initialize" to R.id.initialize, "identify" to R.id.identify, "track" to R.id.track,
+            "screen" to R.id.screen, "show" to R.id.show, "pause" to R.id.pause,
+            "resume" to R.id.resume, "close" to R.id.close, "reset" to R.id.reset,
+        )
+        val steps = intent.getStringExtra("autoRun")?.split(',')?.map { it.trim() }.orEmpty()
+        steps.forEachIndexed { index, step ->
+            log.postDelayed({
+                val id = buttons[step]
+                if (id == null) print("autoRun: unknown step \"$step\"") else findViewById<Button>(id).performClick()
+            }, index * 2000L)
+        }
+    }
+
     private fun onClick(id: Int, action: () -> Unit) {
         findViewById<Button>(id).setOnClickListener { action() }
     }
 
     private fun print(line: String) {
+        // Also in Logcat, so a scripted run can be followed without the screen.
+        Log.i("ResponslyExample", line)
         log.append("${clock.format(Date())}  $line\n")
         logScroll.post { logScroll.fullScroll(View.FOCUS_DOWN) }
     }
