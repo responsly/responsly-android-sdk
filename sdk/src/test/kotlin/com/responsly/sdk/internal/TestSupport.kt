@@ -174,6 +174,9 @@ internal class FakePlatform(
 ) : Platform {
     val apiHosts = ArrayList<String>()
 
+    /** APIs for specific hosts; every other host gets [api]. */
+    val perHost = HashMap<String, FakeApi>()
+
     override val environment = Environment(
         appId = "com.acme.app",
         appVersion = "2.3.0",
@@ -183,7 +186,7 @@ internal class FakePlatform(
 
     override fun createApi(apiHost: String, sdkKey: String): SdkApi {
         apiHosts.add(apiHost)
-        return api
+        return perHost[apiHost] ?: api
     }
 }
 

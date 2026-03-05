@@ -7,6 +7,7 @@ import com.responsly.sdk.PresentationStyle
 import com.responsly.sdk.ResponslyOptions
 import com.responsly.sdk.ShowOptions
 import com.responsly.sdk.Survey
+import com.responsly.sdk.internal.FakeApi
 import com.responsly.sdk.internal.FakeClock
 import com.responsly.sdk.internal.FakePlatform
 import com.responsly.sdk.internal.FakeScheduler
@@ -916,14 +917,31 @@ class ResponslyCoreTest {
     }
 
     @Test
-    fun aSurveyWaitingForItsDelayIsDroppedWhenTrackingIsDisabled() {
-        initialize(config(survey("S1", extra = """"delay_seconds":5""")))
+    fun aSurveyThatIsNotVisibleYetIsCancelledSilentlyWhenTrackingIsDisabled() {
+        // Waiting for its delay.
+        initialize(config(survey("S1", extra = """"frequency":{"mode":"always"},"delay_seconds":5""")))
         track()
         core.setTrackingEnabled(false)
         scheduler.drain()
-        assertEquals(listOf("not_shown:S1:disabled"), listener.log)
         scheduler.advance(10_000)
         assertTrue(presenter.calls.isEmpty())
+        assertTrue(listener.log.isEmpty())
+
+        // Loading in the hidden container.
+        core.setTrackingEnabled(true)
+        track()
+        scheduler.advance(5_000)
+        assertEquals(listOf("present:S1"), presenter.calls)
+        core.setTrackingEnabled(false)
+        scheduler.drain()
+        assertEquals(listOf("present:S1", "dismiss"), presenter.calls)
+        scheduler.advance(60_000)
+
+        // Never shown: no callback, no state change, no telemetry.
+        assertTrue(listener.log.isEmpty())
+        assertNull(stored().state.surveys["S1"])
+        assertTrue(stored().telemetry.isEmpty())
+        assertTrue(api.posts.isEmpty())
     }
 
     @Test
@@ -1025,6 +1043,207 @@ class ResponslyCoreTest {
         assertEquals("u_3", stored().state.userId)
         assertNull(api.etags.single())
     }
+
+    // region The same key with another API host
+
+    private val hostA = "http://10.0.2.2:8000"
+    private val hostB = "http://10.0.2.2:9000"
+
+    private fun apiWith(vararg surveys: String, etag: String): FakeApi =
+        FakeApi().apply { configResponse = ConfigResponse.Ok(config(*surveys), etag) }
+
+    private fun initializeOn(host: String) = initialize(body = null, options = ResponslyOptions(apiHost = host))
+
+    @Test
+    fun theSameKeyAndHostStaysIdempotentWhateverTheTrailingSlash() {
+        initialize(options = ResponslyOptions(apiHost = hostA))
+        core.identify("u_1", emptyMap())
+        initialize(options = ResponslyOptions(apiHost = "$hostA/"))
+        initialize(options = ResponslyOptions(apiHost = " $hostA "))
+        assertEquals(1, api.configFetches)
+        assertEquals(listOf(hostA), platform.apiHosts)
+        assertEquals(hostA, stored().configHost)
+        assertEquals("u_1", stored().state.userId)
+    }
+
+    @Test
+    fun theSameKeyWithAnotherApiHostSwitchesToItDropsTheCacheAndFetchesAgain() {
+        val apiA = apiWith(survey("SA"), etag = "\"a1\"")
+        val apiB = apiWith(survey("SB"), etag = "\"b1\"")
+        platform.perHost[hostA] = apiA
+        platform.perHost[hostB] = apiB
+
+        initializeOn(hostA)
+        core.identify("u_1", mapOf("plan" to "pro"))
+        track()
+        assertEquals(listOf("present:SA"), presenter.calls)
+        post("ready")
+        core.closeSurvey()
+        scheduler.drain()
+        val installId = stored().state.installId
+        assertEquals(hostA, stored().configHost)
+        assertEquals("\"a1\"", stored().configEtag)
+
+        initializeOn(hostB)
+
+        // The new host was asked, and not with the ETag of the old host's copy.
+        assertEquals(listOf(hostA, hostB), platform.apiHosts)
+        assertEquals(1, apiA.configFetches)
+        assertEquals(listOf<String?>(null), apiB.etags)
+        val after = stored()
+        assertEquals(hostB, after.configHost)
+        assertEquals("\"b1\"", after.configEtag)
+        assertTrue(after.configBody!!.contains("SB"))
+        assertFalse(after.configBody!!.contains("SA"))
+
+        // Nothing else was reset.
+        assertEquals("rsk_test", after.sdkKey)
+        assertEquals(installId, after.state.installId)
+        assertEquals("u_1", after.state.userId)
+        assertEquals(mapOf<String, Any?>("plan" to "pro"), after.state.traits)
+        assertEquals(1, after.state.eventCounts["e"])
+        assertEquals(1, after.state.surveys.getValue("SA").displayCount)
+
+        // Targeting runs on the new configuration, and telemetry goes to the new host.
+        track()
+        assertEquals("present:SB", presenter.calls.last())
+        post("ready")
+        core.onAppBackground()
+        scheduler.drain()
+        assertTrue(apiB.postedEvents().contains("displayed:SB"))
+
+        // Initialising with the new host again changes nothing.
+        initializeOn(hostB)
+        assertEquals(1, apiB.configFetches)
+    }
+
+    @Test
+    fun theOldHostsCacheIsNotUsedEvenWhenTheNewHostCannotBeReached() {
+        val apiA = apiWith(survey("SA"), etag = "\"a1\"")
+        val apiB = FakeApi().apply { configResponse = ConfigResponse.Failed("offline") }
+        platform.perHost[hostA] = apiA
+        platform.perHost[hostB] = apiB
+        initializeOn(hostA)
+
+        initializeOn(hostB)
+        assertEquals(1, apiB.configFetches)
+        assertNull(stored().configBody)
+        assertNull(stored().configEtag)
+        assertNull(stored().configHost)
+        show("SA")
+        assertEquals(listOf("not_shown:SA:config_unavailable"), listener.log)
+        assertTrue(presenter.calls.isEmpty())
+
+        // Going back to the first host downloads its configuration again, from scratch.
+        initializeOn(hostA)
+        assertEquals(listOf<String?>(null, null), apiA.etags)
+        assertEquals(hostA, stored().configHost)
+        show("SA")
+        assertEquals(listOf("present:SA"), presenter.calls)
+    }
+
+    @Test
+    fun atTheNextLaunchACacheFromAnotherHostIsNotUsed() {
+        initialize(options = ResponslyOptions(apiHost = hostA))
+        assertEquals(hostA, stored().configHost)
+
+        clock.time += 1_000
+        relaunch()
+        api.configResponse = ConfigResponse.Failed("offline")
+        initializeOn(hostB)
+        // The copy was fresh, but it is another host's: fetched anyway, without its ETag.
+        assertEquals(listOf<String?>(null), api.etags)
+        assertNull(stored().configBody)
+        show("S1")
+        assertEquals(listOf("not_shown:S1:config_unavailable"), listener.log)
+        assertTrue(presenter.calls.isEmpty())
+    }
+
+    @Test
+    fun aCacheThatDoesNotSayWhichHostItCameFromIsNotUsed() {
+        initialize()
+        storage.values.remove(StateStore.KEY_CONFIG_HOST)
+
+        relaunch()
+        api.configResponse = ConfigResponse.Failed("offline")
+        initialize(body = null)
+        assertEquals(listOf<String?>(null), api.etags)
+        assertNull(stored().configBody)
+        track()
+        assertTrue(presenter.calls.isEmpty())
+    }
+
+    @Test
+    fun anAnswerStillOnItsWayFromTheOldHostIsIgnored() {
+        val apiA = apiWith(survey("SA"), etag = "\"a1\"")
+        val apiB = apiWith(survey("SB"), etag = "\"b1\"")
+        platform.perHost[hostA] = apiA
+        platform.perHost[hostB] = apiB
+        scheduler.holdIo = true
+        initializeOn(hostA)
+        initializeOn(hostB)
+        show("SB")
+        scheduler.runIo()
+
+        assertEquals(1, apiA.configFetches)
+        assertEquals(1, apiB.configFetches)
+        assertEquals(hostB, stored().configHost)
+        assertTrue(stored().configBody!!.contains("SB"))
+        assertFalse(stored().configBody!!.contains("SA"))
+        // The showSurvey that was waiting for a configuration got the new host's.
+        assertEquals(listOf("present:SB"), presenter.calls)
+        assertTrue(listener.log.isEmpty())
+    }
+
+    @Test
+    fun switchingTheHostCancelsASurveyThatIsNotVisibleYetAndLeavesAVisibleOneAlone() {
+        platform.perHost[hostA] = apiWith(survey("SA", extra = """"frequency":{"mode":"always"},"delay_seconds":5"""), etag = "\"a1\"")
+        platform.perHost[hostB] = apiWith(survey("SB"), etag = "\"b1\"")
+        initializeOn(hostA)
+        track()
+        initializeOn(hostB)
+        scheduler.advance(10_000)
+        assertTrue(presenter.calls.isEmpty())
+        assertTrue(listener.log.isEmpty())
+
+        track()
+        post("ready")
+        assertEquals(listOf("present:SB", "reveal"), presenter.calls)
+        initializeOn(hostA)
+        assertEquals(listOf("present:SB", "reveal"), presenter.calls)
+        assertEquals(listOf("shown:SB:event"), listener.log)
+
+        // The respondent can still finish it.
+        post("completed", """{"response_id":"r_1"}""")
+        assertEquals("completed:SB", listener.log.last())
+    }
+
+    @Test
+    fun aHostThatRejectedTheKeyDoesNotBlockAnotherHost() {
+        platform.perHost[hostA] = FakeApi().apply { configResponse = ConfigResponse.InvalidKey }
+        val apiB = apiWith(survey("SB"), etag = "\"b1\"")
+        platform.perHost[hostB] = apiB
+        initializeOn(hostA)
+        show("SB")
+        assertEquals(listOf("not_shown:SB:config_unavailable"), listener.log)
+
+        initializeOn(hostB)
+        assertEquals(1, apiB.configFetches)
+        track()
+        assertEquals(listOf("present:SB"), presenter.calls)
+    }
+
+    @Test
+    fun appLaunchIsEvaluatedAgainstTheNewHostsConfiguration() {
+        platform.perHost[hostA] = apiWith(survey("SA"), etag = "\"a1\"")
+        platform.perHost[hostB] = apiWith(survey("SL", triggers = """[{"type":"app_launch"}]"""), etag = "\"b1\"")
+        initializeOn(hostA)
+        assertTrue(presenter.calls.isEmpty())
+        initializeOn(hostB)
+        assertEquals(listOf("present:SL"), presenter.calls)
+    }
+
+    // endregion
 
     @Test
     fun anEmptyKeyIsIgnored() {

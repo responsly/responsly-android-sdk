@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [1.1.1] - 2026-03-05
+
+- initialize: switch API host for the same key; silent cancel when tracking is turned off.
+
 ## [1.1.0] - 2026-01-20
 
 - Example: scripted run from the launch intent, log in Logcat.

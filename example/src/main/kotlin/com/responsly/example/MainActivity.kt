@@ -130,14 +130,6 @@ class MainActivity : Activity(), ResponslyListener {
             .apply()
         Responsly.initialize(applicationContext, key, ResponslyOptions(apiHost = host, logLevel = level))
         print("initialize(\"$key\", apiHost=$host, logLevel=$level)")
-
-        // initialize is idempotent for the same key, so a new API host needs a new process.
-        val previous = initializedWith
-        if (previous != null && previous.first == key && previous.second != host) {
-            print("note: already initialised with this key; restart the app to use another API host")
-        } else {
-            initializedWith = key to host
-        }
     }
 
     // region ResponslyListener - called on the main thread
@@ -193,9 +185,6 @@ class MainActivity : Activity(), ResponslyListener {
     }
 
     private companion object {
-        /** SDK key and API host of the first initialize in this process. */
-        var initializedWith: Pair<String, String>? = null
-
         const val PREFERENCES = "example"
         const val KEY_SDK_KEY = "sdk_key"
         const val KEY_API_HOST = "api_host"

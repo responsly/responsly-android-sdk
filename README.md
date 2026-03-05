@@ -24,14 +24,14 @@ The SDK is on Maven Central.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("com.responsly:sdk:1.1.0")
+    implementation("com.responsly:sdk:1.1.1")
 }
 ```
 
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'com.responsly:sdk:1.1.0'
+    implementation 'com.responsly:sdk:1.1.1'
 }
 ```
 
@@ -122,13 +122,13 @@ Everything lives on the `Responsly` object. Every call is safe from any thread a
 
 | Call | What it does |
 |---|---|
-| `initialize(context, sdkKey, options)` | Starts the SDK. `ResponslyOptions(apiHost, logLevel)`. Calling it again with the same key does nothing; a different key resets the stored state first. |
+| `initialize(context, sdkKey, options)` | Starts the SDK. `ResponslyOptions(apiHost, logLevel)`. Calling it again with the same key and API host does nothing; a different key resets the stored state first; the same key with another `apiHost` switches to that host and downloads the configuration again. |
 | `identify(userId, traits)` | Sets the user id and merges traits. |
 | `setAttributes(traits)` | Merges traits; a `null` value removes a trait. |
 | `track(event, properties)` | Counts the event and evaluates event triggers. |
 | `screen(name)` | Sets the current screen and evaluates screen triggers. |
 | `showSurvey(surveyId, options)` | Shows a survey by id. `ShowOptions(force, hiddenFields, locale, presentation)`. |
-| `closeSurvey()` | Closes the visible survey, or cancels one that is about to show. |
+| `closeSurvey()` | Closes the visible survey (a dismissal unless it was completed). One that is still waiting or loading is cancelled silently. |
 | `pause()` / `resume()` | Stops and resumes targeting. `showSurvey` still works while paused. |
 | `setLocale(languageTag)` | Overrides the locale used for targeting and the survey language; `null` returns to the device language. |
 | `setHiddenFields(fields)` | Hidden-field values passed to every survey. Replaces the previous map. |
@@ -222,7 +222,7 @@ listener callbacks.
 ./gradlew :sdk:testDebugUnitTest      # unit tests, including the protocol's targeting fixtures
 ./gradlew :sdk:lintRelease            # Android lint
 ./gradlew :sdk:assembleRelease        # sdk/build/outputs/aar/sdk-release.aar
-./gradlew :sdk:publishToMavenLocal    # com.responsly:sdk:1.1.0 in ~/.m2
+./gradlew :sdk:publishToMavenLocal    # com.responsly:sdk:1.1.1 in ~/.m2
 ```
 
 JDK 17 and the Android SDK (platform 36) are required. The behaviour the SDK implements is

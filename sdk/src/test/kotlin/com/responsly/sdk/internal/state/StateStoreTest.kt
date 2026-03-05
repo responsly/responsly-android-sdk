@@ -37,7 +37,7 @@ class StateStoreTest {
         store.markDismissed("S1")
         store.markDisplayed("S2", 3_000L, auto = false)
         store.markCompleted("S2", 4_000L)
-        store.saveConfig("""{"surveys":[]}""", "\"etag-1\"", 5_000L)
+        store.saveConfig("""{"surveys":[]}""", "\"etag-1\"", 5_000L, "https://api.responsly.com")
         store.telemetry.add(TelemetryEvent("displayed", "S1"))
         store.telemetry.add(TelemetryEvent("dismissed", "S1"))
         store.saveTelemetry()
@@ -67,6 +67,7 @@ class StateStoreTest {
         assertEquals("""{"surveys":[]}""", reloaded.configBody)
         assertEquals("\"etag-1\"", reloaded.configEtag)
         assertEquals(5_000L, reloaded.configFetchedAt)
+        assertEquals("https://api.responsly.com", reloaded.configHost)
         assertEquals(listOf("displayed:S1", "dismissed:S1"), reloaded.telemetry.map { "${it.type}:${it.surveyId}" })
     }
 
@@ -96,7 +97,7 @@ class StateStoreTest {
         store.setTrackingEnabled(false)
         store.countEvent("e")
         store.markDisplayed("S1", 1_000L, auto = true)
-        store.saveConfig("{}", "etag", 1_000L)
+        store.saveConfig("{}", "etag", 1_000L, "https://api.responsly.com")
         store.telemetry.add(TelemetryEvent("displayed", "S1"))
         store.saveTelemetry()
         val installId = store.state.installId
@@ -118,6 +119,7 @@ class StateStoreTest {
             assertNull(candidate.configBody)
             assertNull(candidate.configEtag)
             assertNull(candidate.configFetchedAt)
+            assertNull(candidate.configHost)
             assertTrue(candidate.telemetry.isEmpty())
         }
         assertEquals(
@@ -129,12 +131,29 @@ class StateStoreTest {
     @Test
     fun notModifiedOnlyRestartsTheTtl() {
         val store = open()
-        store.saveConfig("{}", "etag", 1_000L)
+        store.saveConfig("{}", "etag", 1_000L, "https://api.responsly.com")
         store.touchConfig(9_000L)
         val reloaded = open()
         assertEquals("{}", reloaded.configBody)
         assertEquals("etag", reloaded.configEtag)
         assertEquals(9_000L, reloaded.configFetchedAt)
+        assertEquals("https://api.responsly.com", reloaded.configHost)
+    }
+
+    @Test
+    fun theCachedConfigurationRemembersItsHostAndForgetsItWhenDropped() {
+        val store = open()
+        store.saveConfig("{}", "etag", 1_000L, "http://10.0.2.2:8000")
+        assertEquals("http://10.0.2.2:8000", open().configHost)
+
+        store.clearConfig()
+        for (candidate in listOf(store, open())) {
+            assertNull(candidate.configBody)
+            assertNull(candidate.configEtag)
+            assertNull(candidate.configFetchedAt)
+            assertNull(candidate.configHost)
+        }
+        assertFalse(storage.values.keys.any { it.startsWith("config") })
     }
 
     @Test
@@ -163,14 +182,14 @@ class StateStoreTest {
         store.setTrackingEnabled(true)
         store.countEvent("e")
         store.markDisplayed("S1", 1_000L, auto = true)
-        store.saveConfig("{}", "etag", 1_000L)
+        store.saveConfig("{}", "etag", 1_000L, "https://api.responsly.com")
         store.telemetry.add(TelemetryEvent("displayed", "S1"))
         store.saveTelemetry()
         assertEquals(
             setOf(
                 "sdk_key", "install_id", "user_id", "traits", "locale", "hidden_fields", "tracking_enabled",
                 "event_counts", "surveys", "last_auto_display_at", "config", "config_etag", "config_fetched_at",
-                "telemetry_queue",
+                "config_api_host", "telemetry_queue",
             ),
             storage.values.keys,
         )
