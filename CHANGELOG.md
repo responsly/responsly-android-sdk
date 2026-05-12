@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [1.2.0] - 2026-05-12
+
+- Ask for hardware acceleration on the survey window.
+
 ## [1.1.1] - 2026-03-05
 
 - initialize: switch API host for the same key; silent cancel when tracking is turned off.
