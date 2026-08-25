@@ -2,6 +2,10 @@
 
 All notable changes to this SDK are documented here.
 
+## [1.2.1] - 2026-08-25
+
+- Release version 1.2.1.
+
 ## [1.2.0] - 2026-05-12
 
 - Ask for hardware acceleration on the survey window.
