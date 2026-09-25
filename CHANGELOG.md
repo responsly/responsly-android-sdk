@@ -2,6 +2,13 @@
 
 All notable changes to this SDK are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- Ignore audience and event conditions without an attribute or property name, so malformed
+  negative conditions cannot qualify a survey.
+
 ## [1.2.1] - 2026-08-25
 
 - Release version 1.2.1.
