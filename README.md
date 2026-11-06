@@ -24,14 +24,14 @@ The SDK is on Maven Central.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("com.responsly:sdk:1.2.1")
+    implementation("com.responsly:sdk:1.2.2")
 }
 ```
 
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'com.responsly:sdk:1.2.1'
+    implementation 'com.responsly:sdk:1.2.2'
 }
 ```
 
@@ -222,7 +222,7 @@ listener callbacks.
 ./gradlew :sdk:testDebugUnitTest      # unit tests, including the protocol's targeting fixtures
 ./gradlew :sdk:lintRelease            # Android lint
 ./gradlew :sdk:assembleRelease        # sdk/build/outputs/aar/sdk-release.aar
-./gradlew :sdk:publishToMavenLocal    # com.responsly:sdk:1.2.1 in ~/.m2
+./gradlew :sdk:publishToMavenLocal    # com.responsly:sdk:1.2.2 in ~/.m2
 ```
 
 JDK 17 and the Android SDK (platform 36) are required. The behaviour the SDK implements is
