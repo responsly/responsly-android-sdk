@@ -127,7 +127,7 @@ Everything lives on the `Responsly` object. Every call is safe from any thread a
 | `setAttributes(traits)` | Merges traits; a `null` value removes a trait. |
 | `track(event, properties)` | Counts the event and evaluates event triggers. |
 | `screen(name)` | Sets the current screen and evaluates screen triggers. |
-| `showSurvey(surveyId, options)` | Shows a survey by id. `ShowOptions(force, hiddenFields, locale, presentation)`. |
+| `showSurvey(surveyId, options)` | Shows a survey by its Survey ID from the form's **Share → Mobile app** tab (a form with several configurations has one for each). `ShowOptions(force, hiddenFields, locale, presentation)`. |
 | `closeSurvey()` | Closes the visible survey (a dismissal unless it was completed). One that is still waiting or loading is cancelled silently. |
 | `pause()` / `resume()` | Stops and resumes targeting. `showSurvey` still works while paused. |
 | `setLocale(languageTag)` | Overrides the locale used for targeting and the survey language; `null` returns to the device language. |
