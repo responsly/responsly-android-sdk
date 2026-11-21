@@ -108,6 +108,31 @@ class HttpSdkApiTest {
     }
 
     @Test
+    fun doesNotForwardSdkHeadersToARedirectTarget() {
+        // A different port is a different origin, even when both servers use localhost.
+        val target = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        val forwarded = ArrayList<String>()
+        target.createContext("/") { exchange ->
+            synchronized(forwarded) { forwarded.add(exchange.requestHeaders.getFirst("X-Responsly-Sdk-Key")) }
+            exchange.send(200, "{}")
+            exchange.close()
+        }
+        target.start()
+        try {
+            respond = { exchange ->
+                exchange.responseHeaders.add("Location", "http://127.0.0.1:${target.address.port}/config")
+                exchange.send(302)
+            }
+            val response = api().fetchConfig(null)
+            assertTrue(response is ConfigResponse.Failed)
+            assertTrue("The redirect target must receive no request", synchronized(forwarded) { forwarded.isEmpty() })
+            assertEquals(1, requests.size)
+        } finally {
+            target.stop(0)
+        }
+    }
+
+    @Test
     fun postsEvents() {
         val body = """{"events":[{"type":"displayed","survey_id":"aBcD1234"}]}"""
         assertEquals(PostResult.SENT, api().postEvents(body))
