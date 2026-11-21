@@ -19,21 +19,43 @@ Documentation: <https://developers.responsly.com>
 
 ## Install
 
-The SDK is on Maven Central.
+The SDK is published to the Responsly Maven repository,
+`https://responsly.github.io/responsly-android-sdk/maven`. Add it next to `google()` and
+`mavenCentral()`, then add the dependency.
 
 ```kotlin
-// build.gradle.kts
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://responsly.github.io/responsly-android-sdk/maven") }
+    }
+}
+
+// app/build.gradle.kts
 dependencies {
     implementation("com.responsly:sdk:1.2.3")
 }
 ```
 
 ```groovy
-// build.gradle
+// settings.gradle
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://responsly.github.io/responsly-android-sdk/maven' }
+    }
+}
+
+// app/build.gradle
 dependencies {
     implementation 'com.responsly:sdk:1.2.3'
 }
 ```
+
+A project that declares repositories in the top-level `build.gradle` instead adds the same `maven` line there.
 
 No ProGuard / R8 rules are needed; the library brings its own.
 
