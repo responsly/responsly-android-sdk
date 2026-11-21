@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Responsly Android SDK · Maven repository</title>
+<meta name="description" content="Maven repository of the Responsly Android SDK (com.responsly:sdk).">
+<style>
+  :root { color-scheme: light dark; --fg: #1d1d1f; --muted: #5f6368; --bg: #ffffff; --code: #f4f5f7; --line: #e3e5e8; --accent: #3557ff; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #f1f3f4; --muted: #a8adb4; --bg: #121316; --code: #1d1f24; --line: #2c2f36; --accent: #8fa2ff; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 56px 16px; }
+  h1 { font-size: 28px; line-height: 1.25; margin: 0 0 8px; }
+  p { color: var(--muted); margin: 0 0 16px; }
+  h2 { font-size: 17px; margin: 32px 0 8px; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  a { color: var(--accent); }
+  ul { padding-left: 20px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Responsly Android SDK</h1>
+  <p>Maven repository of <code>com.responsly:sdk</code>. Show Responsly surveys inside your Android app.</p>
+
+  <h2>1. Add the repository</h2>
+<pre><code>// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://responsly.github.io/responsly-android-sdk/maven") }
+    }
+}</code></pre>
+
+  <h2>2. Add the dependency</h2>
+<pre><code>// app/build.gradle.kts
+dependencies {
+    implementation("com.responsly:sdk:1.2.3")
+}</code></pre>
+
+  <h2>Links</h2>
+  <ul>
+    <li><a href="https://developers.responsly.com/mobile-sdk/installation/android/">Android installation guide</a></li>
+    <li><a href="https://github.com/responsly/responsly-android-sdk">Source code and changelog on GitHub</a></li>
+  </ul>
+</main>
+</body>
+</html>
