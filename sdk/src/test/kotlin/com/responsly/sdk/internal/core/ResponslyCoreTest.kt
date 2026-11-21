@@ -338,6 +338,14 @@ class ResponslyCoreTest {
     }
 
     @Test
+    fun aSurveyUrlWithoutHttpsIsLoadFailedExceptOnALocalHost() {
+        initialize("""{"surveys":[{"id":"S1","url":"http://acme.responsly.com/f/S1","triggers":[{"type":"event","name":"e"}]}]}""")
+        track()
+        assertEquals(listOf("not_shown:S1:load_failed"), listener.log)
+        assertTrue(presenter.calls.isEmpty())
+    }
+
+    @Test
     fun aHiddenContainerThatLosesItsActivityIsLoadedAgain() {
         initialize()
         track()
@@ -854,6 +862,24 @@ class ResponslyCoreTest {
     }
 
     @Test
+    fun anApiHostWithoutHttpsIsRefused() {
+        initialize(options = ResponslyOptions(apiHost = "http://api.responsly.com", logLevel = LogLevel.DEBUG))
+        assertEquals(emptyList<String>(), platform.apiHosts)
+        assertEquals(0, api.configFetches)
+        assertTrue(logs.lines.any { it.contains("the API host must be an https address") })
+
+        initialize(options = ResponslyOptions(apiHost = "https://api.responsly.com"))
+        assertEquals(listOf("https://api.responsly.com"), platform.apiHosts)
+    }
+
+    @Test
+    fun aRedirectingApiHostIsReportedAsAnError() {
+        api.configResponse = ConfigResponse.Redirected(301)
+        initialize(body = null, options = ResponslyOptions(logLevel = LogLevel.ERROR))
+        assertTrue(logs.lines.toString(), logs.lines.any { it.contains("HTTP 301 with a redirect") })
+    }
+
+    @Test
     fun theApiHostOptionIsUsed() {
         initialize(options = ResponslyOptions(apiHost = "http://10.0.2.2:8000"))
         assertEquals(listOf("http://10.0.2.2:8000"), platform.apiHosts)
@@ -1293,6 +1319,16 @@ class ResponslyCoreTest {
         assertTrue(logs.lines.any { it.contains("survey S1 selected") })
         assertTrue(logs.lines.any { it.contains("survey S2 not shown: another_survey_selected") })
         assertTrue(logs.lines.any { it.contains("bridge: ready") })
+    }
+
+    @Test
+    fun bridgeMessagesAreLoggedWithoutTheAnswers() {
+        initialize()
+        track()
+        post("ready")
+        post("question_answered", """{"question_id":"q1","type":"text","value":"my secret answer"}""")
+        assertTrue(logs.lines.any { it.endsWith("bridge: question_answered") })
+        assertFalse(logs.lines.toString(), logs.lines.any { it.contains("my secret answer") })
     }
 
     @Test

@@ -177,7 +177,7 @@ Responsly.initialize(this, "rsk_…", ResponslyOptions(logLevel = LogLevel.DEBUG
 ```
 
 With `LogLevel.DEBUG` the SDK logs every targeting decision with its reason, every configuration
-download and every message from the survey to Logcat, tag `Responsly`.
+download and the type of every message from the survey (never the answers) to Logcat, tag `Responsly`.
 
 ## How surveys appear
 

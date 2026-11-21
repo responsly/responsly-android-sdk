@@ -124,7 +124,7 @@ class HttpSdkApiTest {
                 exchange.send(302)
             }
             val response = api().fetchConfig(null)
-            assertTrue(response is ConfigResponse.Failed)
+            assertEquals(302, (response as ConfigResponse.Redirected).status)
             assertTrue("The redirect target must receive no request", synchronized(forwarded) { forwarded.isEmpty() })
             assertEquals(1, requests.size)
         } finally {
